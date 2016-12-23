@@ -693,10 +693,10 @@ var BaseAtom = (function () {
         if (name === void 0) { name = "Atom@" + getNextId(); }
         this.name = name;
         this.isPendingUnobservation = true;
-        this.observers = [];
+        this.observers = []; // 元素是 derivation
         this.observersIndexes = {};
         this.diffValue = 0;
-        this.lastAccessedBy = 0;
+        this.lastAccessedBy = 0; //
         this.lowestObserverState = IDerivationState.NOT_TRACKING;
     }
     BaseAtom.prototype.onBecomeUnobserved = function () {
@@ -715,7 +715,7 @@ var BaseAtom = (function () {
     return BaseAtom;
 }());
 exports.BaseAtom = BaseAtom;
-var Atom = (function (_super) {
+var Atom = (function (_super) {// 给 observable 继承
     __extends(Atom, _super);
     function Atom(name, onBecomeObservedHandler, onBecomeUnobservedHandler) {
         if (name === void 0) { name = "Atom@" + getNextId(); }
@@ -725,8 +725,8 @@ var Atom = (function (_super) {
         this.name = name;
         this.onBecomeObservedHandler = onBecomeObservedHandler;
         this.onBecomeUnobservedHandler = onBecomeUnobservedHandler;
-        this.isPendingUnobservation = false;
-        this.isBeingTracked = false;
+        this.isPendingUnobservation = false; // 当前 observer 没有被任何 derivation 监听，就是没被用到
+        this.isBeingTracked = false; //
     }
     Atom.prototype.reportObserved = function () {
         startBatch();
@@ -934,7 +934,7 @@ function checkIfStateModificationsAreAllowed() {
     }
 }
 function trackDerivedFunction(derivation, f) {
-    changeDependenciesStateTo0(derivation);
+    changeDependenciesStateTo0(derivation);// derivation.dependenciesState = UP_TO_DATE; derivation.observing[index].lowestObserverState = UP_TO_DATE  注意这是上一次依赖的observing
     derivation.newObserving = new Array(derivation.observing.length + 100);
     derivation.unboundDepsCount = 0;
     derivation.runId = ++globalState.runId;
@@ -981,7 +981,7 @@ function bindDependencies(derivation) {
     var observing = derivation.observing = derivation.newObserving;
     derivation.newObserving = null;
     var i0 = 0, l = derivation.unboundDepsCount;
-    for (var i = 0; i < l; i++) {
+    for (var i = 0; i < l; i++) {// observing 移除 diffValue == 1 的元素
         var dep = observing[i];
         if (dep.diffValue === 0) {
             dep.diffValue = 1;
@@ -990,24 +990,24 @@ function bindDependencies(derivation) {
             i0++;
         }
     }
-    observing.length = i0;
+    observing.length = i0;//这时observing[].diffValue = 1
     l = prevObserving.length;
     while (l--) {
         var dep = prevObserving[l];
-        if (dep.diffValue === 0) {
+        if (dep.diffValue === 0) {//observing在prevObserving的补集
             removeObserver(dep, derivation);
         }
         dep.diffValue = 0;
-    }
+    }//这时prevObserving[].diffValue = 0
     while (i0--) {
         var dep = observing[i0];
-        if (dep.diffValue === 1) {
+        if (dep.diffValue === 1) {//prevObserving在observing的补集
             dep.diffValue = 0;
             addObserver(dep, derivation);
         }
     }
 }
-function clearObserving(derivation) {
+function clearObserving(derivation) {//清空所有 observable 与 derivation 之间相互引用
     var obs = derivation.observing;
     var i = obs.length;
     while (i--)
@@ -1145,7 +1145,7 @@ function endBatch() {
         for (var i = 0; i < list.length; i++) {
             var observable_1 = list[i];
             observable_1.isPendingUnobservation = false;
-            if (observable_1.observers.length === 0) {
+            if (observable_1.observers.length === 0) {// 如果 observable 没有 observer 依赖，则触发onBecomeUnobserved事件
                 observable_1.onBecomeUnobserved();
             }
         }
@@ -1153,10 +1153,10 @@ function endBatch() {
     }
     globalState.inBatch--;
 }
-function reportObserved(observable) {
+function reportObserved(observable) { //通知 正在追踪的 derivation，让其更新它依赖的observable
     var derivation = globalState.trackingDerivation;
     if (derivation !== null) {
-        if (derivation.runId !== observable.lastAccessedBy) {
+        if (derivation.runId !== observable.lastAccessedBy) {//保证 derivation 每次执行 对同一个 observable 只依赖一次
             observable.lastAccessedBy = derivation.runId;
             derivation.newObserving[derivation.unboundDepsCount++] = observable;
         }
@@ -1224,15 +1224,15 @@ var Reaction = (function () {
         this.runId = 0;
         this.unboundDepsCount = 0;
         this.__mapid = "#" + getNextId();
-        this.isDisposed = false;
-        this._isScheduled = false;
-        this._isTrackPending = false;
-        this._isRunning = false;
+        this.isDisposed = false;// 该Reaction是否停止使用
+        this._isScheduled = false;//该Reaction是否加入globalState.pendingReactions
+        this._isTrackPending = false; //追踪是否挂起
+        this._isRunning = false; // 正在运行追踪
     }
     Reaction.prototype.onBecomeStale = function () {
         this.schedule();
     };
-    Reaction.prototype.schedule = function () {
+    Reaction.prototype.schedule = function () {// 将该reaction加到 pendingReactions 队列中，并执行 onInvalidate
         if (!this._isScheduled) {
             this._isScheduled = true;
             globalState.pendingReactions.push(this);
@@ -1289,7 +1289,7 @@ var Reaction = (function () {
         this._isRunning = false;
         this._isTrackPending = false;
     };
-    Reaction.prototype.dispose = function () {
+    Reaction.prototype.dispose = function () {// 停止使用 该reaction
         if (!this.isDisposed) {
             this.isDisposed = true;
             if (!this._isRunning) {
