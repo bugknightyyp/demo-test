@@ -1030,7 +1030,7 @@ function untrackedStart() {
 function untrackedEnd(prev) {
     globalState.trackingDerivation = prev;
 }
-function changeDependenciesStateTo0(derivation) {
+function changeDependenciesStateTo0(derivation) {// 使的derivation 以及它依赖的 observable 的状态变成 UP_TO_DATE
     if (derivation.dependenciesState === IDerivationState.UP_TO_DATE)
         return;
     derivation.dependenciesState = IDerivationState.UP_TO_DATE;
@@ -1226,7 +1226,7 @@ var Reaction = (function () {
         this.__mapid = "#" + getNextId();
         this.isDisposed = false;// 该Reaction是否停止使用
         this._isScheduled = false;//该Reaction是否加入globalState.pendingReactions
-        this._isTrackPending = false; //追踪是否挂起
+        this._isTrackPending = false; //是否跟踪等待
         this._isRunning = false; // 正在运行追踪
     }
     Reaction.prototype.onBecomeStale = function () {
