@@ -778,7 +778,6 @@ var ComputedValue = (function () {
         this.isComputing = false;
         return res;
     };
-    ;
     ComputedValue.prototype.peekUntracked = function () {
         var hasError = true;
         try {
@@ -1171,7 +1170,7 @@ function invariantLOS(observable, msg) {
         return;
     throw new Error("lowestObserverState is wrong for " + msg + " because " + min + " < " + observable.lowestObserverState);
 }
-function propagateChanged(observable) {
+function propagateChanged(observable) {//当 observable 发生变化时，将依赖它的 deviation 的状态改成 STALE
     if (observable.lowestObserverState === IDerivationState.STALE)
         return;
     observable.lowestObserverState = IDerivationState.STALE;
@@ -1180,7 +1179,7 @@ function propagateChanged(observable) {
     while (i--) {
         var d = observers[i];
         if (d.dependenciesState === IDerivationState.UP_TO_DATE)
-            d.onBecomeStale();
+            d.onBecomeStale();// 当 deviation 依赖的数据要发生变化了
         d.dependenciesState = IDerivationState.STALE;
     }
 }
@@ -1396,7 +1395,7 @@ function transaction(action, thisArg, report) {
     }
 }
 exports.transaction = transaction;
-function transactionStart(name, thisArg, report) {
+function transactionStart(name, thisArg, report) {// 开始事务
     if (thisArg === void 0) { thisArg = undefined; }
     if (report === void 0) { report = true; }
     startBatch();
@@ -1713,7 +1712,7 @@ var ObservableArray = (function (_super) {
         if (owned === void 0) { owned = false; }
         _super.call(this);
         var adm = new ObservableArrayAdministration(name, mode, this, owned);
-        addHiddenFinalProp(this, "$mobx", adm);
+        addHiddenFinalProp(this, "$mobx", adm);// 定义隐藏属性 $mobx
         if (initialValues && initialValues.length) {
             adm.updateArrayLength(0, initialValues.length);
             adm.values = initialValues.map(adm.makeReactiveArrayItem, adm);
@@ -1767,7 +1766,7 @@ var ObservableArray = (function (_super) {
     };
     ObservableArray.prototype.splice = function (index, deleteCount) {
         var newItems = [];
-        for (var _i = 2; _i < arguments.length; _i++) {
+        for (var _i = 2; _i < arguments.length; _i++) {// 缓存要添加的元素
             newItems[_i - 2] = arguments[_i];
         }
         switch (arguments.length) {
@@ -2266,9 +2265,9 @@ function setObservableObjectInstanceProperty(adm, propName, descriptor) {
         adm.target[propName] = descriptor.value;
     }
     else {
-        if ("value" in descriptor)
+        if ("value" in descriptor)// 数据描述符
             defineObservableProperty(adm, propName, descriptor.value, true, undefined);
-        else
+        else // 存取描述符
             defineObservableProperty(adm, propName, descriptor.get, true, descriptor.set);
     }
 }
@@ -2278,16 +2277,16 @@ function defineObservableProperty(adm, propName, newValue, asInstanceProperty, s
     var observable;
     var name = adm.name + "." + propName;
     var isComputed = true;
-    if (isComputedValue(newValue)) {
+    if (isComputedValue(newValue)) {//如果newValue是 computed deviation
         observable = newValue;
         newValue.name = name;
         if (!newValue.scope)
             newValue.scope = adm.target;
     }
-    else if (typeof newValue === "function" && newValue.length === 0 && !isAction(newValue)) {
+    else if (typeof newValue === "function" && newValue.length === 0 && !isAction(newValue)) {//如果newValue是函数 & 没有形参 & 不是Action
         observable = new ComputedValue(newValue, adm.target, false, name, setter);
     }
-    else if (getModifier(newValue) === ValueMode.Structure && typeof newValue.value === "function" && newValue.value.length === 0) {
+    else if (getModifier(newValue) === ValueMode.Structure && typeof newValue.value === "function" && newValue.value.length === 0) {//
         observable = new ComputedValue(newValue.value, adm.target, true, name, setter);
     }
     else {
@@ -2673,7 +2672,7 @@ function deprecated(msg) {
     deprecatedMessages.push(msg);
     console.error("[mobx] Deprecated: " + msg);
 }
-function once(func) {
+function once(func) {// 通过闭包的形式使得函数只执行一次
     var invoked = false;
     return function () {
         if (invoked)
