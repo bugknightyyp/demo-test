@@ -1171,7 +1171,7 @@ function invariantLOS(observable, msg) {
         return;
     throw new Error("lowestObserverState is wrong for " + msg + " because " + min + " < " + observable.lowestObserverState);
 }
-function propagateChanged(observable) {
+function propagateChanged(observable) {//当 observable 发生变化时，将依赖它的 deviation 的状态改成 STALE
     if (observable.lowestObserverState === IDerivationState.STALE)
         return;
     observable.lowestObserverState = IDerivationState.STALE;
@@ -1396,7 +1396,7 @@ function transaction(action, thisArg, report) {
     }
 }
 exports.transaction = transaction;
-function transactionStart(name, thisArg, report) {
+function transactionStart(name, thisArg, report) {// 开始事务
     if (thisArg === void 0) { thisArg = undefined; }
     if (report === void 0) { report = true; }
     startBatch();
@@ -1713,7 +1713,7 @@ var ObservableArray = (function (_super) {
         if (owned === void 0) { owned = false; }
         _super.call(this);
         var adm = new ObservableArrayAdministration(name, mode, this, owned);
-        addHiddenFinalProp(this, "$mobx", adm);
+        addHiddenFinalProp(this, "$mobx", adm);// 定义隐藏属性 $mobx
         if (initialValues && initialValues.length) {
             adm.updateArrayLength(0, initialValues.length);
             adm.values = initialValues.map(adm.makeReactiveArrayItem, adm);
@@ -1767,7 +1767,7 @@ var ObservableArray = (function (_super) {
     };
     ObservableArray.prototype.splice = function (index, deleteCount) {
         var newItems = [];
-        for (var _i = 2; _i < arguments.length; _i++) {
+        for (var _i = 2; _i < arguments.length; _i++) {// 缓存要添加的元素
             newItems[_i - 2] = arguments[_i];
         }
         switch (arguments.length) {
@@ -2673,7 +2673,7 @@ function deprecated(msg) {
     deprecatedMessages.push(msg);
     console.error("[mobx] Deprecated: " + msg);
 }
-function once(func) {
+function once(func) {// 通过闭包的形式使得函数只执行一次
     var invoked = false;
     return function () {
         if (invoked)
