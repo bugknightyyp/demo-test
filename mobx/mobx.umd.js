@@ -726,7 +726,7 @@ var Atom = (function (_super) {// 给 observable 继承
         this.onBecomeObservedHandler = onBecomeObservedHandler;
         this.onBecomeUnobservedHandler = onBecomeUnobservedHandler;
         this.isPendingUnobservation = false; // 当前 observer 没有被任何 derivation 监听，就是没被用到
-        this.isBeingTracked = false; //
+        this.isBeingTracked = false; // 是否被
     }
     Atom.prototype.reportObserved = function () {
         startBatch();
@@ -996,8 +996,8 @@ function bindDependencies(derivation) {
         if (dep.diffValue === 0) {//observing在prevObserving的补集
             removeObserver(dep, derivation);
         }
-        dep.diffValue = 0;
-    }//这时prevObserving[].diffValue = 0
+        dep.diffValue = 0;// 这儿使得
+    }
     while (i0--) {
         var dep = observing[i0];
         if (dep.diffValue === 1) {//prevObserving在observing的补集
@@ -1029,7 +1029,7 @@ function untrackedStart() {
 function untrackedEnd(prev) {
     globalState.trackingDerivation = prev;
 }
-function changeDependenciesStateTo0(derivation) {// 使的derivation 以及它依赖的 observable 的状态变成 UP_TO_DATE
+function changeDependenciesStateTo0(derivation) {// 使的derivation的dependenciesState以及它依赖的 observable 的状态变成 UP_TO_DATE
     if (derivation.dependenciesState === IDerivationState.UP_TO_DATE)
         return;
     derivation.dependenciesState = IDerivationState.UP_TO_DATE;
@@ -1098,7 +1098,7 @@ function invariantObservers(observable) {
     }
     invariant(list.length === 0 || Object.keys(map).length === list.length - 1, "INTERNAL ERROR there is no junk in map");
 }
-function addObserver(observable, node) {
+function addObserver(observable, node) {// 给 observable.observers 添加被依赖的 derivation
     var l = observable.observers.length;
     if (l) {
         observable.observersIndexes[node.__mapid] = l;
@@ -1222,16 +1222,16 @@ var Reaction = (function () {
         this.diffValue = 0;
         this.runId = 0;
         this.unboundDepsCount = 0;
-        this.__mapid = "#" + getNextId();
+        this.__mapid = "#" + getNextId();// 可以理解成 Reaction 的id
         this.isDisposed = false;// 该Reaction是否停止使用
         this._isScheduled = false;//该Reaction是否加入globalState.pendingReactions
-        this._isTrackPending = false; //是否跟踪等待
-        this._isRunning = false; // 正在运行追踪
+        this._isTrackPending = false; //是否正在追踪
+        this._isRunning = false; // 正在运行 onInvalidate
     }
     Reaction.prototype.onBecomeStale = function () {
         this.schedule();
     };
-    Reaction.prototype.schedule = function () {// 将该reaction加到 pendingReactions 队列中，并执行 onInvalidate
+    Reaction.prototype.schedule = function () {// 将该reaction加到 pendingReactions 队列中，并执行 runReactions
         if (!this._isScheduled) {
             this._isScheduled = true;
             globalState.pendingReactions.push(this);
@@ -1243,7 +1243,7 @@ var Reaction = (function () {
     Reaction.prototype.isScheduled = function () {
         return this._isScheduled;
     };
-    Reaction.prototype.runReaction = function () {
+    Reaction.prototype.runReaction = function () {// 主要就是执行 onInvalidate
         if (!this.isDisposed) {
             this._isScheduled = false;
             if (shouldCompute(this)) {
