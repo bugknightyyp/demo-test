@@ -5,7 +5,7 @@
 	<title>Document</title>
 </head>
 <body>
-<script src="./mobx.umd.js"></script>
+<script src="./mobx.umd.3.0.0.js"></script>
 <script>
 
 var todos = mobx.observable([
@@ -20,13 +20,13 @@ mobx.autorun(() => {
 			.join(", ")
 	);
 });
-mobx.autorun(() => {
-	console.log("Remaining:",todos
-      .filter(todo => {return !todo.completed} )
-			.map(todo => todo.title)
-			.join(", ")
-	);
-});
+// mobx.autorun(() => {
+// 	console.log("Remaining:",todos
+//       .filter(todo => {return !todo.completed} )
+// 			.map(todo => todo.title)
+// 			.join(", ")
+// 	);
+// });
 // Prints: 'Remaining: Make coffee'
 
 todos[0].completed = false;
