@@ -1,0 +1,23 @@
+{
+  "name": "demo-test",
+  "version": "1.0.0",
+  "description": "studing libary for testing demo",
+  "main": "",
+  "scripts": {
+    "mobx": "node ./mobx/build.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "none"
+  },
+  "keywords": [
+    "mobx"
+  ],
+  "author": "bugknightyyp",
+  "license": "MIT",
+  "dependencies": {
+    "html-minifier": "^3.2.3",
+    "less": "^2.7.2",
+    "pug": "^2.0.0-beta6"
+  }
+}
