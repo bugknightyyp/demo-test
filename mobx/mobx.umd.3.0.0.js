@@ -1899,6 +1899,7 @@ function createArraySetter(index) {
 }
 function createArrayGetter(index) {
     return function () {
+      debugger
         var impl = this.$mobx;
         if (impl && index < impl.values.length) {
             impl.atom.reportObserved();

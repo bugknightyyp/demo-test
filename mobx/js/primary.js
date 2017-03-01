@@ -1,11 +1,11 @@
-var cityName = mobx.observable("Vienna");
+var cityName = mobx.observable("sz");
 
 console.log(cityName.get());
-// prints 'Vienna'
+// prints 'sz'
 
 cityName.observe(function(change) {
     console.log(change.oldValue, "->", change.newValue);
 });
 
-cityName.set("Amsterdam");
-// prints 'Vienna -> Amsterdam'
+cityName.set("dg");
+// prints 'sz -> dg'
